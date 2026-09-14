@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "ming-life",
+  "title": "玄学人生工作台",
+  "description": "保留原版档案、自动关联会话和自动解读流程。",
+  "version": "1.2.0",
+  "entry": "./lib/client.js",
+  "compatibility": {
+    "desktopWorkbenches": "^0.1.0",
+    "harness": "^0.1.5-rc.2"
+  },
+  "capabilities": [
+    "iframe-panel",
+    "local-profile-storage",
+    "managed-session-association",
+    "native-conversation-draft",
+    "automatic-interpretation"
+  ],
+  "permissions": {
+    "filesystem": "档案目录由原版规则创建，自动作为工作区关联；Agent 使用原生文件权限。",
+    "network": "原版外部字体及样式，Agent 模型服务依照用户配置。"
+  },
+  "initialization": "empty",
+  "layout": {
+    "businessSide": "left",
+    "businessWidth": 0.65
+  }
+}

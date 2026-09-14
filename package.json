@@ -1,6 +1,6 @@
 {
   "name": "ming-life",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "东方玄学人生工作台 —— DSH (DeepSeek Harness) 插件。排盘引擎算事实（八字/紫微/六爻/梅花，真太阳时），规则引擎标信号，DSH 写解读并自动写回档案。",
   "keywords": [
     "deepseek",
@@ -21,11 +21,11 @@
   "author": "liqingb0220-stack",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/liqingb0220-stack/dsh-ming-life.git"
+    "url": "git+https://github.com/dataelement/dsh-ming-life.git"
   },
-  "homepage": "https://github.com/liqingb0220-stack/dsh-ming-life#readme",
+  "homepage": "https://github.com/dataelement/dsh-ming-life#readme",
   "bugs": {
-    "url": "https://github.com/liqingb0220-stack/dsh-ming-life/issues"
+    "url": "https://github.com/dataelement/dsh-ming-life/issues"
   },
   "type": "module",
   "main": "./dsh/index.js",
@@ -47,7 +47,9 @@
     "vite.config.js",
     "tailwind.config.js",
     "postcss.config.js",
-    "index.html"
+    "index.html",
+    "workbench.json",
+    "README.en.md"
   ],
   "engines": {
     "node": ">=20"
@@ -59,7 +61,7 @@
     "build:engines": "node scripts/build-engines.mjs",
     "build:dsh": "DSH_BASE=/api/ming-life/app/ vite build && node scripts/build-engines.mjs",
     "test:dsh": "node --test --test-timeout=8000 --test-force-exit tests/test-dsh.mjs",
-    "check": "node --check dsh/index.js && node --check lib/client.js && npm run test:dsh",
+    "check": "node --check dsh/index.js && node --check lib/client.js && npm run test:dsh && node --test tests/test-original-adapter.mjs",
     "dev:host": "DSH_MING_LIFE_ROOT=/tmp/ming-life-host node scripts/dev-host.mjs 5199"
   },
   "dependencies": {
@@ -77,8 +79,9 @@
     "esbuild": "^0.21.0"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "*",
-    "@deepseek-ai/dsh-host-webserver": "*"
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-host-webserver": "^0.1.5-rc.2",
+    "@deepseek-ai/dsh-client-connection": "^0.1.5-rc.2"
   },
   "dsh": {
     "bundle": {
@@ -87,9 +90,8 @@
     "client": {
       "platform": "web",
       "inject": [
-        "@deepseek-ai/dsh-client-ui-slots",
+        "dsh-desktop-workbenches",
         "@deepseek-ai/dsh-client-ui-conversation",
-        "@deepseek-ai/dsh-client-ui-layout",
         "@deepseek-ai/dsh-api-session-controller"
       ]
     }

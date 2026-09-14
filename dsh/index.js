@@ -17,7 +17,7 @@ import { randomUUID } from 'node:crypto'
 import { contextDocument } from './engines.mjs'
 
 export const name = 'ming-life'
-export const inject = ['webServer']
+export const inject = ['webServer', 'connection']
 
 const ROOT = dirname(fileURLToPath(import.meta.url))
 const DIST = process.env.DSH_MING_LIFE_DIST ? resolve(process.env.DSH_MING_LIFE_DIST) : join(ROOT, '..', 'dist')
@@ -287,7 +287,15 @@ export async function handleApi(req, res) {
 }
 
 export function apply(ctx) {
-  const wrap = (req, res) => handleApi(req, res).catch(e => json(res, 500, { error: e instanceof Error ? e.message : String(e) }))
+  const wrap = async (req, res) => {
+    try {
+      if (typeof ctx.connection?.requestRejection !== 'function') return json(res, 503, { error: 'DSH authentication unavailable' })
+      const rejection = ctx.connection.requestRejection(req)
+      if (rejection !== undefined) return json(res, rejection, { error: 'Request rejected by DSH' })
+      if (req.method === 'POST' && !/^application\/json(?:;|$)/i.test(req.headers?.['content-type'] || '')) return json(res, 415, { error: 'application/json required' })
+      await handleApi(req, res)
+    } catch (error) { json(res, 500, { error: error.message }) }
+  }
   ctx.effect(() => ctx.webServer.register({ kind: 'prefix', path: APP_PREFIX, handler: wrap }), 'ming-life: app')
   for (const path of ['/api/ming-life/projects', '/api/ming-life/projects/delete', '/api/ming-life/bootstrap',
     '/api/ming-life/save', '/api/ming-life/action', '/api/ming-life/watch']) {
