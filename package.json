@@ -21,11 +21,11 @@
   "author": "liqingb0220-stack",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dataelement/dsh-ming-life.git"
+    "url": "git+https://github.com/cinderzhan/dsh-ming-life.git"
   },
-  "homepage": "https://github.com/dataelement/dsh-ming-life#readme",
+  "homepage": "https://github.com/cinderzhan/dsh-ming-life#readme",
   "bugs": {
-    "url": "https://github.com/dataelement/dsh-ming-life/issues"
+    "url": "https://github.com/cinderzhan/dsh-ming-life/issues"
   },
   "type": "module",
   "main": "./dsh/index.js",
@@ -79,9 +79,9 @@
     "esbuild": "^0.21.0"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-host-webserver": "^0.1.5-rc.2",
-    "@deepseek-ai/dsh-client-connection": "^0.1.5-rc.2"
+    "@deepseek-ai/cordis": ">=4.0.1 <5.0.0-0",
+    "@deepseek-ai/dsh-host-webserver": ">=0.1.5-rc.2 <0.2.0-0",
+    "@deepseek-ai/dsh-client-connection": ">=0.1.5-rc.2 <0.2.0-0"
   },
   "dsh": {
     "bundle": {
