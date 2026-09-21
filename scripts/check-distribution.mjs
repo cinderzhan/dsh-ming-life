@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdtemp, readFile, readdir, rm, stat } from 'node:fs/promises'
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
@@ -17,6 +17,29 @@ try {
   for (const file of ['package.json', 'dsh/index.js', 'dsh/engines.mjs', 'lib/client.js', 'cordis.patch.yml', 'dist/index.html']) {
     assert.ok((await stat(path.join(root, file))).isFile(), `Missing packaged file: ${file}`)
   }
+  const manifest = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'))
+  assert.equal(manifest.name, 'ming-life')
+  assert.equal(manifest.repository?.url, 'git+https://github.com/dataelement/dsh-ming-life.git')
+  assert.equal(manifest.exports?.['./client'], './lib/client.js')
+  assert.equal(manifest.dsh?.bundle?.patch, './cordis.patch.yml')
+  assert.ok(manifest.dsh?.client?.inject?.includes('dsh-desktop-workbenches'), 'Package must inject the Desktop workbench service')
+
+  // Exercise the same pnpm tarball boundary used by DSH Desktop generations.
+  const install = path.join(directory, 'install')
+  await writeFile(path.join(directory, 'package.json'), JSON.stringify({ name: 'market-smoke', private: true, version: '0.0.0' }))
+  await writeFile(path.join(directory, '.npmrc'), 'node-linker=hoisted\nauto-install-peers=false\n')
+  execFileSync(process.execPath, [
+    path.resolve('node_modules/pnpm/bin/pnpm.cjs'),
+    'add',
+    `file:${path.join(directory, packs[0])}`,
+    '--dir', directory,
+    '--config.auto-install-peers=false',
+    '--config.node-linker=hoisted'
+  ], { stdio: 'pipe' })
+  const installed = JSON.parse(await readFile(path.join(directory, 'node_modules', manifest.name, 'package.json'), 'utf8'))
+  assert.equal(installed.name, manifest.name)
+  assert.equal(installed.version, manifest.version)
+
   const html = await readFile(path.join(root, 'dist/index.html'), 'utf8')
   const assets = [...html.matchAll(/(?:src|href)="\/api\/ming-life\/app\/([^"?#]+\.(?:js|css))"/g)]
   assert.ok(assets.some(([, file]) => file.endsWith('.js')), 'Missing built JS asset reference')
