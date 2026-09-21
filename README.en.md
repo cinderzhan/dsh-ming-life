@@ -1,5 +1,14 @@
 # dsh-ming-life
 
+## Original-workflow Desktop adapter 1.2.0
+
+This version minimally adapts original commit 3666033. Business pages, forms, chart engines and automatic interpretations remain intact. Open through the Desktop local market. Creating/selecting a profile immediately shows its UI while `desktopWorkbenches.ensureSession` automatically creates/restores the workspace and session using the profile folder, checks ownership, retains `profile.sessionId`, and fills the original onboarding draft. No manual workspace selection is required first.
+
+Onboarding remains an unsent draft. Subsequent original automatic interpretations still submit automatically, but defer while there is an unrelated user draft, rich reference or submission in progress, or while another workbench/session is foreground. Delayed input readiness retains onboarding for retry. Session association failures leave business data usable; use the panel retry control. Switching/uninstalling does not delete business data.
+
+Requires Desktop exposing both `desktopWorkbenches.register` and `ensureSession`. Desktop owns public navigation and the left 65% business layout; the original sidebar/overlay installation and resize instructions below are historical, superseded by this market entry. Iframe messages check source and ownership, APIs use host authentication, and native Agent permissions remain in force.
+
+
 **Eastern Metaphysics Life Workbench** · a DeepSeek Harness (DSH) plugin
 
 [简体中文](README.md) | **English**

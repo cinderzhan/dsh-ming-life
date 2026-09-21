@@ -66,7 +66,7 @@ export function watch(onChange) {
 const origin = window.location.origin;
 export function whoami(onBound) {
   const handler = e => {
-    if (e.origin !== origin) return;
+    if (e.origin !== origin || e.source !== window.parent) return;
     if (e.data?.type === 'dsh-ming-life:bound') onBound(e.data);
     if (e.data?.type === 'dsh-ming-life:ask-result') onBound({ askResult: e.data });
   };
