@@ -1,5 +1,14 @@
 # dsh-ming-life
 
+## Desktop 原版流程适配 1.2.0
+
+此版本基于原版 3666033 最小适配，业务页面、表单、排盘及自动解读不变。通过 Desktop 本地市场打开业务面板；创建或选择档案立即展示资料，同时通过 `desktopWorkbenches.ensureSession` 自动用档案目录创建/恢复工作区和会话、校验归属、保存原有 `profile.sessionId` 并填入原版开场白草稿。已有会话仍按原关联恢复，用户无需先手动选工作区。
+
+开场白须回车发送；原版后续自动解读仍自动发送。若有用户未发送草稿、引用或提交中的输入，自动解读会等待，不能代用户发送无关草稿；切换到别的工作台或会话时也会等待。输入尚未就绪时开场白留待重试。自动关联失败不阻断档案，使用面板“重试关联会话”重试。卸载或切换不删除原始资料。
+
+需要支持 `desktopWorkbenches.register` 与 `ensureSession` 的 Desktop；本包不能为旧 Desktop 自动增加这些接口。业务面板默认左侧65%，公共导航由 Desktop 管理，不再注册独立侧栏/覆盖层或修改外壳 DOM。后文原始安装路径、侧栏入口与手动拖拽宽度描述仅供原版参考，此版以市场入口与宿主布局为准。iframe 消息校验来源和当前归属；API 接入宿主认证，Agent 权限仍由原生会话控制。
+
+
 **东方玄学人生工作台** · DeepSeek Harness (DSH) 插件
 
 **简体中文** | [English](README.en.md)
@@ -50,20 +59,20 @@
 
 ## 安装
 
-本插件面向 **DSH Desktop**，安装到 DSH 的 `web` profile。仓库已包含构建产物（`dist/`、`dsh/engines.mjs`），安装后无需再执行 build。
+本插件面向 **DSH Desktop**，安装到 DSH 的 `web` profile。源码仓库不跟踪 `dist/`、`dsh/engines.mjs`；它们由 `prepare` / `prepack` 自动生成，并仍包含在 npm 或 Release 的安装包中。源码安装需要构建依赖且允许生命周期脚本；预构建包安装不需要重新构建。使用 `--ignore-scripts` 安装开发依赖后，需显式运行 `npm run build:dsh`。
 
 **macOS**
 
 ```bash
 cd "$HOME/Library/Application Support/dsh-desktop/harness/profiles/web"
-../../.desktop-bin/pnpm add github:liqingb0220-stack/dsh-ming-life
+../../.desktop-bin/pnpm add github:dataelement/dsh-ming-life
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
 cd "$env:APPDATA\dsh-desktop\harness\profiles\web"
-..\..\.desktop-bin\pnpm add github:liqingb0220-stack/dsh-ming-life
+..\..\.desktop-bin\pnpm add github:dataelement/dsh-ming-life
 ```
 
 然后编辑该目录下的 `package.json`，将 `"ming-life"` 加入 `dsh.profile.bundles` 数组：
@@ -281,7 +290,7 @@ src/
 └── store/          档案状态与持久化（单机 localStorage / 宿主 profile.json）
 dsh/index.js        插件 node 侧
 lib/client.js       插件浏览器侧
-dist/               前端构建产物（已提交）
+dist/               前端构建产物（Git 忽略，安装包包含）
 tests/              node 回归套件
 ```
 
