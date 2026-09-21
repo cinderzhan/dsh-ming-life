@@ -48,7 +48,6 @@
     "tailwind.config.js",
     "postcss.config.js",
     "index.html",
-    "workbench.json",
     "README.en.md"
   ],
   "engines": {
