@@ -11,7 +11,7 @@
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { watch } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, extname, join, resolve, normalize } from 'node:path'
+import { dirname, extname, isAbsolute, join, relative, resolve, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { randomUUID } from 'node:crypto'
 import { contextDocument } from './engines.mjs'
@@ -165,7 +165,8 @@ async function serveApp(pathname, res) {
   let rel = pathname.slice(APP_PREFIX.length).replace(/^\/+/, '')
   if (!rel) rel = 'index.html'
   const target = resolve(DIST, normalize(rel))
-  if (target !== DIST && !target.startsWith(`${DIST}/`)) return json(res, 403, { error: 'invalid path' })
+  const withinDist = relative(DIST, target)
+  if (withinDist.startsWith('..') || isAbsolute(withinDist)) return json(res, 403, { error: 'invalid path' })
   let bytes
   try { bytes = await readFile(target) } catch {
     // SPA 回退：非资源路径都给 index

@@ -1,6 +1,6 @@
 {
   "name": "ming-life",
-  "version": "1.2.0",
+  "version": "0.1.0",
   "description": "东方玄学人生工作台 —— DSH (DeepSeek Harness) 插件。排盘引擎算事实（八字/紫微/六爻/梅花，真太阳时），规则引擎标信号，DSH 写解读并自动写回档案。",
   "keywords": [
     "deepseek",
