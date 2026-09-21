@@ -35,5 +35,3 @@ temp/
 .DS_Store
 Thumbs.db
 Desktop.ini
-
-# dist/ and dsh/engines.mjs are intentionally tracked release inputs.
