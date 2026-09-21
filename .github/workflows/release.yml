@@ -45,10 +45,21 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build release package
+      - name: Build stable market package
         run: |
           mkdir release
-          npm pack --pack-destination release
+          archive="$(npm pack --pack-destination release | tail -n 1)"
+          mv "release/$archive" release/ming-life.tgz
+      - name: Verify release package through the Desktop market install boundary
+        run: |
+          install_dir="$(mktemp -d)"
+          printf '{"name":"market-release-smoke","private":true,"version":"0.0.0"}\n' > "$install_dir/package.json"
+          node node_modules/pnpm/bin/pnpm.cjs add "file:$GITHUB_WORKSPACE/release/ming-life.tgz" \
+            --dir "$install_dir" \
+            --config.auto-install-peers=false \
+            --config.node-linker=hoisted
+          node -e "const p=require(process.argv[1]); if(p.name!=='ming-life'||p.version!==require('./package.json').version) process.exit(1)" \
+            "$install_dir/node_modules/ming-life/package.json"
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
