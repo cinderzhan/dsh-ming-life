@@ -58,10 +58,13 @@
     "build": "vite build",
     "preview": "vite preview",
     "build:engines": "node scripts/build-engines.mjs",
-    "build:dsh": "DSH_BASE=/api/ming-life/app/ vite build && node scripts/build-engines.mjs",
+    "build:dsh": "node scripts/build-dsh.mjs",
     "test:dsh": "node --test --test-timeout=8000 --test-force-exit tests/test-dsh.mjs",
     "check": "node --check dsh/index.js && node --check lib/client.js && npm run test:dsh && node --test tests/test-original-adapter.mjs",
-    "dev:host": "DSH_MING_LIFE_ROOT=/tmp/ming-life-host node scripts/dev-host.mjs 5199"
+    "dev:host": "DSH_MING_LIFE_ROOT=/tmp/ming-life-host node scripts/dev-host.mjs 5199",
+    "prepare": "npm run build:dsh",
+    "prepack": "npm run build:dsh",
+    "check:distribution": "node scripts/check-distribution.mjs"
   },
   "dependencies": {
     "iztro": "^2.6.1",

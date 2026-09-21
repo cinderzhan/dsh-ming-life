@@ -59,20 +59,20 @@ Requires Desktop exposing both `desktopWorkbenches.register` and `ensureSession`
 
 ## Installation
 
-The plugin targets **DSH Desktop** and installs into the `web` profile. The repository already contains build output (`dist/`, `dsh/engines.mjs`), so no build step is needed after installing.
+The plugin targets **DSH Desktop** and installs into the `web` profile. Build output (`dist/`, `dsh/engines.mjs`) is not tracked in Git. The `prepare` / `prepack` hooks generate it and npm/Release packages still include it. Source installs require build dependencies and enabled lifecycle scripts; prebuilt packages need no rebuild. After installing development dependencies with `--ignore-scripts`, run `npm run build:dsh` explicitly.
 
 **macOS**
 
 ```bash
 cd "$HOME/Library/Application Support/dsh-desktop/harness/profiles/web"
-../../.desktop-bin/pnpm add github:liqingb0220-stack/dsh-ming-life
+../../.desktop-bin/pnpm add github:dataelement/dsh-ming-life
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
 cd "$env:APPDATA\dsh-desktop\harness\profiles\web"
-..\..\.desktop-bin\pnpm add github:liqingb0220-stack/dsh-ming-life
+..\..\.desktop-bin\pnpm add github:dataelement/dsh-ming-life
 ```
 
 Then edit `package.json` in that directory and add `"ming-life"` to the `dsh.profile.bundles` array:
@@ -291,7 +291,7 @@ src/
 └── store/          profile state and persistence (standalone localStorage / hosted profile.json)
 dsh/index.js        plugin node side
 lib/client.js       plugin browser side
-dist/               front-end build (committed)
+dist/               front-end build (Git-ignored, included in packages)
 tests/              node regression suites
 ```
 

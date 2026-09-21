@@ -35,3 +35,7 @@ temp/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Generated from src; included in npm/Release packages by package.json files.
+/dist/
+/dsh/engines.mjs

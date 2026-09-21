@@ -59,20 +59,20 @@
 
 ## 安装
 
-本插件面向 **DSH Desktop**，安装到 DSH 的 `web` profile。仓库已包含构建产物（`dist/`、`dsh/engines.mjs`），安装后无需再执行 build。
+本插件面向 **DSH Desktop**，安装到 DSH 的 `web` profile。源码仓库不跟踪 `dist/`、`dsh/engines.mjs`；它们由 `prepare` / `prepack` 自动生成，并仍包含在 npm 或 Release 的安装包中。源码安装需要构建依赖且允许生命周期脚本；预构建包安装不需要重新构建。使用 `--ignore-scripts` 安装开发依赖后，需显式运行 `npm run build:dsh`。
 
 **macOS**
 
 ```bash
 cd "$HOME/Library/Application Support/dsh-desktop/harness/profiles/web"
-../../.desktop-bin/pnpm add github:liqingb0220-stack/dsh-ming-life
+../../.desktop-bin/pnpm add github:dataelement/dsh-ming-life
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
 cd "$env:APPDATA\dsh-desktop\harness\profiles\web"
-..\..\.desktop-bin\pnpm add github:liqingb0220-stack/dsh-ming-life
+..\..\.desktop-bin\pnpm add github:dataelement/dsh-ming-life
 ```
 
 然后编辑该目录下的 `package.json`，将 `"ming-life"` 加入 `dsh.profile.bundles` 数组：
@@ -290,7 +290,7 @@ src/
 └── store/          档案状态与持久化（单机 localStorage / 宿主 profile.json）
 dsh/index.js        插件 node 侧
 lib/client.js       插件浏览器侧
-dist/               前端构建产物（已提交）
+dist/               前端构建产物（Git 忽略，安装包包含）
 tests/              node 回归套件
 ```
 
