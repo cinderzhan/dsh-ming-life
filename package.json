@@ -42,6 +42,7 @@
     "scripts",
     "tests",
     "cordis.patch.yml",
+    "workbench.json",
     "README.md",
     "LICENSE",
     "vite.config.js",

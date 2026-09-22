@@ -92,3 +92,24 @@ test('host assets and data routes fail closed through native authentication', as
     assert.equal(status, 401)
   }
 })
+
+test('registration, package.json and workbench.json agree on ID and version', async () => {
+  const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
+  const manifest = JSON.parse(await readFile(new URL('../workbench.json', import.meta.url), 'utf8'))
+  let descriptor
+  const ctx = { effect: fn => fn(), sessions: { list: { getSnapshot: () => ({}), subscribe: () => () => {} }, scope: () => ({ get: () => null }) },
+    desktopWorkbenches: { getSnapshot: () => ({ state: { added: [], sessionBindings: {} } }), register: value => { descriptor = value; return () => {} } } }
+  let plugin
+  vm.runInNewContext(source, {
+    window: { location: { origin: 'http://local' }, __ModuleLoader__: { load: spec => { plugin = spec.factory(() => ({ createElement() {} })) } } },
+    document: { createElement: () => ({ dataset: {} }), head: { appendChild() {} }, querySelector: () => null },
+    localStorage: { getItem: () => '{}', setItem() {} }, fetch: async () => ({ ok: true, json: async () => ({ projects: [] }) }),
+    setTimeout: () => 1, clearTimeout() {}, setInterval: () => 1, clearInterval() {}
+  })
+  plugin.apply(ctx)
+  assert.equal(descriptor.version, pkg.version)
+  assert.equal(manifest.version, pkg.version)
+  assert.equal(manifest.id, descriptor.id)
+  assert.equal(manifest.icon, descriptor.icon)
+  assert.ok(pkg.files.includes('workbench.json'))
+})
