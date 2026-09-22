@@ -93,7 +93,7 @@ test('host assets and data routes fail closed through native authentication', as
   }
 })
 
-test('registration takes identity from the host and package.json owns version and repository', async () => {
+test('registration takes identity and displayed version from the host catalog', async () => {
   const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'))
   let descriptor
   const ctx = { effect: fn => fn(), sessions: { list: { getSnapshot: () => ({}), subscribe: () => () => {} }, scope: () => ({ get: () => null }) },
@@ -106,7 +106,7 @@ test('registration takes identity from the host and package.json owns version an
     setTimeout: () => 1, clearTimeout() {}, setInterval: () => 1, clearInterval() {}
   })
   plugin.apply(ctx)
-  assert.equal(descriptor.version, pkg.version)
+  assert.equal(Object.hasOwn(descriptor, 'version'), false)
   assert.equal(Object.hasOwn(descriptor, 'id'), false)
   assert.equal(pkg.repository.url, 'git+https://github.com/dataelement/dsh-ming-life.git')
   assert.ok(!pkg.files.includes('workbench.json'))
