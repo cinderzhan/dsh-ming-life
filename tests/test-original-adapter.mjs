@@ -4,25 +4,34 @@ import vm from 'node:vm'
 import { readFile } from 'node:fs/promises'
 const source = await readFile(new URL('../lib/client.js', import.meta.url), 'utf8')
 const tick = () => new Promise(resolve => setImmediate(resolve))
-function fixture() {
+function sessionSnapshot(mode, current) {
+  if (mode === 'legacy') return { current }
+  const byId = { other: { retainedBy: { mainView: 0 } } }
+  if (current) byId[current] = { retainedBy: { mainView: 1 } }
+  return { ids: Object.keys(byId), byId }
+}
+function fixture({ mode = 'legacy', projects = [] } = {}) {
   let plugin, draft = '', current = null, ready = true, resultSession = 's1', ensureWait
-const calls = [], timers = [], snapshots = { state: { active: 'dataelement/dsh-ming-life', added: ['dataelement/dsh-ming-life'], sessionBindings: {} } }
+  const calls = [], timers = [], listeners = new Set(), stored = new Map()
+  const snapshots = { state: { active: 'dataelement/dsh-ming-life', added: ['dataelement/dsh-ming-life'], sessionBindings: {} } }
   const input = { state: { getSnapshot: () => ({ draft, phase: 'plain', occurrences: [] }) }, setDraft: text => { draft = text; calls.push(['draft', text]) }, submit: async () => { calls.push(['submit', draft]); draft = '' } }
-  const ctx = { effect: fn => fn(), sessions: { list: { getSnapshot: () => ({ current }), subscribe: () => () => {} }, scope: () => ({ get: () => ready ? { input: { for: () => input } } : null }) },
+  const ctx = { effect: fn => fn(), sessions: { list: { getSnapshot: () => sessionSnapshot(mode, current), subscribe: fn => { listeners.add(fn); return () => listeners.delete(fn) } }, scope: () => ({ get: () => ready ? { input: { for: () => input } } : null }) },
     desktopWorkbenches: { getSnapshot: () => snapshots, isActive: () => snapshots.state.active === 'dataelement/dsh-ming-life', ownsSession: id => snapshots.state.sessionBindings[id] === 'dataelement/dsh-ming-life', register: (descriptor) => { calls.push(['register', descriptor.title]); return () => {} }, ensureSession: async args => {
       calls.push(['ensure', args]); if (ensureWait) await ensureWait
       snapshots.state.sessionBindings[resultSession] = 'dataelement/dsh-ming-life'; current = resultSession; return resultSession
     } }
   }
+  if (mode === 'service') ctx.desktopWorkbenches.currentSession = () => current || undefined
   vm.runInNewContext(source, {
     window: { location: { origin: 'http://local' }, __ModuleLoader__: { load: spec => { plugin = spec.factory(() => ({ createElement() {} })) } } },
     document: { createElement: () => ({ dataset: {} }), head: { appendChild() {} }, querySelector: () => null },
-    localStorage: { getItem: () => '{}', setItem() {} },
-    fetch: async (url, options) => { if (options) calls.push(['post', JSON.parse(options.body)]); return { ok: true, json: async () => url.endsWith('/projects') ? { projects: [] } : { folder: '/profiles/A', profile: { name: 'A', sessionId: '' } } } },
+    localStorage: { getItem: key => stored.get(key) || '{}', setItem: (key, value) => { stored.set(key, value) } },
+    fetch: async (url, options) => { if (options) calls.push(['post', JSON.parse(options.body)]); return { ok: true, json: async () => url.endsWith('/projects') ? { projects } : { folder: '/profiles/A', profile: { name: 'A', sessionId: '' } } } },
     setTimeout: fn => { timers.push(fn); return 1 }, clearTimeout() {}, setInterval: () => 1, clearInterval() {}
   })
   plugin.apply(ctx)
-  return { plugin, calls, snapshots, input, timers, draft: () => draft, setDraft: value => { draft = value }, ready: value => { ready = value }, current: value => { current = value }, resultSession: value => { resultSession = value }, wait: promise => { ensureWait = promise } }
+  return { plugin, calls, snapshots, input, timers, draft: () => draft, setDraft: value => { draft = value }, ready: value => { ready = value }, current: value => { current = value; listeners.forEach(fn => fn()) }, resultSession: value => { resultSession = value }, wait: promise => { ensureWait = promise },
+    project: () => JSON.parse(stored.get('dsh.ming-life.v1') || '{}').project }
 }
 test('original creation automatically ensures folder session, saves original binding, then fills onboarding only', async () => {
   const c = fixture(); await c.plugin.openProject('A'); await tick()
@@ -74,6 +83,26 @@ test('switching during send delay cannot submit to a hidden workbench or another
   c.snapshots.state.active = 'dataelement/dsh-ming-life'; c.plugin.flushPending(); await c.timers.shift()(); await action
   assert.equal(c.calls.filter(row => row[0] === 'submit').length, 1)
 })
+for (const mode of ['service', 'retained', 'legacy']) {
+  test(`[${mode}] current session gates workbench actions`, async () => {
+    const c = fixture({ mode }); await c.plugin.openProject('A'); await tick()
+    assert.equal(c.plugin.currentSessionId(), 's1')
+    assert.equal(c.plugin.activeSession('s1', 'A'), true)
+    c.current('other')
+    assert.equal(c.plugin.currentSessionId(), 'other')
+    assert.equal(c.plugin.activeSession('s1', 'A'), false)
+    c.current(null)
+    assert.equal(c.plugin.currentSessionId(), null)
+  })
+
+  test(`[${mode}] panel follows the session selected in the main view`, async () => {
+    const c = fixture({ mode, projects: [{ id: 'A', sessionId: 'sA' }, { id: 'B', sessionId: 'sB' }] })
+    c.current('sB'); await tick(); await tick()
+    assert.equal(c.project(), 'B')
+    c.current('sA')
+    assert.equal(c.project(), 'A')
+  })
+}
 test('adapter keeps original auto-interpretation components and guards iframe source', async () => {
   const originalApp = await readFile(new URL('../src/App.jsx', import.meta.url), 'utf8')
   const interpretation = await readFile(new URL('../src/components/Interpretation.jsx', import.meta.url), 'utf8')
