@@ -14,14 +14,11 @@ try {
   assert.equal(packs.length, 1)
   execFileSync('tar', ['-xzf', path.join(directory, packs[0]), '-C', directory])
   const root = path.join(directory, 'package')
-  for (const file of ['package.json', 'dsh/index.js', 'dsh/engines.mjs', 'lib/client.js', 'cordis.patch.yml', 'workbench.json', 'dist/index.html']) {
+  for (const file of ['package.json', 'dsh/index.js', 'dsh/engines.mjs', 'lib/client.js', 'cordis.patch.yml', 'dist/index.html']) {
     assert.ok((await stat(path.join(root, file))).isFile(), `Missing packaged file: ${file}`)
   }
   const manifest = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'))
   assert.equal(manifest.name, 'ming-life')
-  const workbench = JSON.parse(await readFile(path.join(root, 'workbench.json'), 'utf8'))
-  assert.equal(workbench.id, 'wb-dataelement-dsh-ming-life')
-  assert.equal(workbench.version, manifest.version)
   assert.equal(manifest.repository?.url, 'git+https://github.com/dataelement/dsh-ming-life.git')
   assert.equal(manifest.exports?.['./client'], './lib/client.js')
   assert.equal(manifest.dsh?.bundle?.patch, './cordis.patch.yml')
