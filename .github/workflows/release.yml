@@ -22,13 +22,18 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Verify tag matches package version
+      - name: Set package version from tag
         shell: bash
-        run: test "${GITHUB_REF_NAME}" = "v$(node -p "require('./package.json').version")"
+        run: |
+          release_version="${GITHUB_REF_NAME#v}"
+          npm version "$release_version" --no-git-tag-version --allow-same-version --ignore-scripts
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json'); if(p.version!==process.argv[1]||l.version!==process.argv[1]||l.packages[''].version!==process.argv[1]) process.exit(1)" "$release_version"
       - run: npm ci
       - run: npm run check
       - run: npm run check:distribution
-      - run: git diff --exit-code
+      - name: Verify checks did not change other tracked files
+        shell: bash
+        run: test -z "$(git diff --name-only -- . ':(exclude)package.json' ':(exclude)package-lock.json')"
 
   publish:
     needs: verify
@@ -44,6 +49,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Set package version from tag
+        shell: bash
+        run: |
+          release_version="${GITHUB_REF_NAME#v}"
+          npm version "$release_version" --no-git-tag-version --allow-same-version --ignore-scripts
       - run: npm ci
       - name: Build stable market package
         run: |
