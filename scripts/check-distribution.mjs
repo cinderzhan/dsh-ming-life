@@ -20,7 +20,7 @@ try {
   const manifest = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'))
   assert.equal(manifest.name, 'ming-life')
   const workbench = JSON.parse(await readFile(path.join(root, 'workbench.json'), 'utf8'))
-  assert.equal(workbench.id, 'ming-life')
+  assert.equal(workbench.id, 'wb-dataelement-dsh-ming-life')
   assert.equal(workbench.version, manifest.version)
   assert.equal(manifest.repository?.url, 'git+https://github.com/dataelement/dsh-ming-life.git')
   assert.equal(manifest.exports?.['./client'], './lib/client.js')
